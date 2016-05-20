@@ -38,15 +38,15 @@ if [ "$DO_COMPARISON" -eq "1" ] ; then
     fi
 
 if [ $INPUT_COUNT -gt 1 ] ; then
-    $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME}.tables} ${INPUT_NAME}
+    $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME%.exe}.tables} ${INPUT_NAME}
     exit $?
     fi
 
 if [ -f ${INPUT_NAME} ] ; then
     if [ $USE_REDIRECT == 1 ] ; then
-        $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME}.tables} < $INPUT_NAME
+        $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME%.exe}.tables} < $INPUT_NAME
     else
-        $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME}.tables} $INPUT_NAME
+        $TESTNAME ${USE_TABLES:+${INPUT_DIRECTORY}/${TESTNAME%.exe}.tables} $INPUT_NAME
     fi
 else
     $TESTNAME
