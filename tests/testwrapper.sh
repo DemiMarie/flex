@@ -30,7 +30,7 @@ while getopts :d:i:rt1 OPTION ; do
 
 TESTNAME="${!OPTIND}"
 
-INPUT_NAME=${INPUT_NAME:-$INPUT_DIRECTORY/`basename $TESTNAME`.txt}
+INPUT_NAME=${INPUT_NAME:-$INPUT_DIRECTORY/`basename ${TESTNAME%.exe}`.txt}
 
 if [ "$DO_COMPARISON" -eq "1" ] ; then
     test `$TESTNAME 1 < $INPUT_NAME` -eq `$TESTNAME < $INPUT_NAME`
