@@ -241,7 +241,7 @@ M4QEND      "]]"
 	.		/* ignore spurious characters */
 }
 <ACTION,CODEBLOCK,ACTION_STRING,PERCENT_BRACE_ACTION,COMMENT>{
-   "M4"|"YY"|"m4" add_action(M4QSTART); ACTION_ECHO; add_action(M4QEND);
+   "M4"|"YY"|"m4"|"#line" add_action(M4QSTART); ACTION_ECHO; add_action(M4QEND);
    {M4QSTART}   ACTION_ECHO_QSTART;
    {M4QEND}     ACTION_ECHO_QEND;
 }
@@ -971,7 +971,7 @@ nmstr[yyleng - 2 - end_is_ws] = '\0';  /* chop trailing brace */
 
 
 <SECT3>{
-    /* "M4"|"m4"|"YY" fprintf (yyout, "[[%s]]", yytext); */
+    "M4"|"m4"|"YY"|"#line" fprintf (yyout, "[[%s]]", yytext);
     {M4QSTART}  fwrite (escaped_qstart, 1, strlen(escaped_qstart) - 0, yyout);
     {M4QEND}    fwrite (escaped_qend, 1, strlen(escaped_qend) - 0, yyout);
 	[^\[\]\n]*(\n?) ECHO;
