@@ -153,11 +153,10 @@ m4preproc_define(`M4_GEN_PREFIX',
     M4_GEN_PREFIX(`wrap')
 %endif
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
+%if-bison-bridge
     M4_GEN_PREFIX(`get_lval')
     M4_GEN_PREFIX(`set_lval')
-]])
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
@@ -706,10 +705,9 @@ m4_ifdef( [[M4_YY_TEXT_IS_ARRAY]],
     int yy_more_len;
 ]])
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
+%if-bison-bridge
     YYSTYPE * yylval_r;
-]])
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
