@@ -794,7 +794,7 @@ void yyset_out  ( FILE * _out_str M4_YY_PROTO_LAST_ARG );
 
 m4_ifdef( [[M4_YY_NO_GET_LENG]],,
 [[
-			int yyget_leng ( M4_YY_PROTO_ONLY_ARG );
+int yyget_leng ( M4_YY_PROTO_ONLY_ARG );
 ]])
 
 m4_ifdef( [[M4_YY_NO_GET_TEXT]],,

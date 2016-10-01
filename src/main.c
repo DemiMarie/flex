@@ -436,7 +436,6 @@ void check_options (void)
 		lerr (_("can't open skeleton file %s"), skelname);
 
 	if (reentrant) {
-        buf_m4_define (&m4defs_buf, "M4_YY_REENTRANT", NULL);
 		if (yytext_is_array)
 			buf_m4_define (&m4defs_buf, "M4_YY_TEXT_IS_ARRAY", NULL);
 	}
@@ -555,10 +554,6 @@ void flexend (int exit_status)
                 "EOB_ACT_LAST_MATCH",
                 "FLEX_SCANNER",
                 "REJECT",
-                "YYFARGS0",
-                "YYFARGS1",
-                "YYFARGS2",
-                "YYFARGS3",
                 "YYLMAX",
                 "YYSTATE",
                 "YY_AT_BOL",
@@ -640,7 +635,7 @@ void flexend (int exit_status)
 				"yypop_buffer_state",
 				"yyensure_buffer_stack",
                 "yyalloc",
-                "yyconst",
+                "const",
                 "yyextra",
                 "yyfree",
                 "yyget_debug",
@@ -1637,7 +1632,7 @@ void readin (void)
 
 	OUT_BEGIN_CODE ();
 	if (fullspd)
-		outn ("typedef yyconst struct yy_trans_info *yy_state_type;");
+		outn ("typedef const struct yy_trans_info *yy_state_type;");
 	else if (!C_plus_plus)
 		outn ("typedef int yy_state_type;");
 	OUT_END_CODE ();
