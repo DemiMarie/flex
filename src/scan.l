@@ -101,6 +101,10 @@ extern const char *escaped_qstart, *escaped_qend;
 	if ( getenv("POSIXLY_CORRECT") ) \
 		posix_compat = true;
 
+#define START_CODEBLOCK do { add_action(M4QSTART); BEGIN(CODEBLOCK); } while(0)
+#define END_CODEBLOCK do { add_action(M4QEND); BEGIN(INITIAL); } while (0)
+#define CODEBLOCK_QSTART "[]""][""[""[]""][""["
+#define CODEBLOCK_QEND "]""]""][""[""]""]""][""["
 %}
 
 %option caseless nodefault noreject stack noyy_top_state
@@ -148,7 +152,7 @@ M4QEND      "]]"
 
 
 <INITIAL>{
-	^{WS}		indented_code = true; BEGIN(CODEBLOCK);
+	^{WS}		indented_code = true; START_CODEBLOCK;
 	^"/*"		ACTION_ECHO; yy_push_state( COMMENT );
 	^#{OPTWS}line{WS}	yy_push_state( LINEDIR );
 	^"%s"{NAME}?	return SCDECL;
@@ -157,7 +161,7 @@ M4QEND      "]]"
 			++linenum;
 			line_directive_out(NULL, 1);
 			indented_code = false;
-			BEGIN(CODEBLOCK);
+			START_CODEBLOCK;
 			}
     ^"%top"[[:blank:]]*"{"[[:blank:]]*{NL}    {
                 brace_start_line = linenum;
@@ -244,21 +248,22 @@ M4QEND      "]]"
 			}
 	.		/* ignore spurious characters */
 }
-<ACTION,CODEBLOCK,ACTION_STRING,PERCENT_BRACE_ACTION,COMMENT>{
+<ACTION,ACTION_STRING,PERCENT_BRACE_ACTION,COMMENT>{
    M4|YY|m4 add_action(M4QSTART); ACTION_ECHO; add_action(M4QEND);
    {M4QSTART}   ACTION_ECHO_QSTART;
    {M4QEND}     ACTION_ECHO_QEND;
 }
 
 <CODEBLOCK>{
-	^"%}".*{NL}	++linenum; BEGIN(INITIAL);
-	.	        ACTION_ECHO;
-
+	^"%}".*{NL}	++linenum; END_CODEBLOCK;
+	[^\n%\[\]]*         ACTION_ECHO;
+        .		ACTION_ECHO;
+	{M4QSTART}	add_action(CODEBLOCK_QSTART);
+	{M4QEND}	add_action(CODEBLOCK_QEND);
 	{NL}		{
 			++linenum;
 			ACTION_ECHO;
-			if ( indented_code )
-				BEGIN(INITIAL);
+			if ( indented_code ) END_CODEBLOCK;
 			}
 }
 
