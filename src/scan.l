@@ -38,8 +38,8 @@ extern bool tablesverify, tablesext;
 extern int trlcontxt; /* Set in  parse.y for each rule. */
 extern const char *escaped_qstart, *escaped_qend;
 
-#define M4QSTART "[["
-#define M4QEND "]]"
+#define M4QSTART "[""["
+#define M4QEND "]""]"
 
 #define SECT3_ESCAPED_QSTART "[" M4QEND M4QSTART "[" M4QEND M4QSTART
 #define SECT3_ESCAPED_QEND M4QEND "]" M4QSTART M4QEND "]" M4QSTART
@@ -51,8 +51,8 @@ extern const char *escaped_qstart, *escaped_qend;
 		action_define( def, 1 ); \
 	}
 
-#define ACTION_ECHO_QSTART add_action (escaped_qstart)
-#define ACTION_ECHO_QEND   add_action (escaped_qend)
+#define ACTION_ECHO_QSTART add_action (SECT3_ESCAPED_QSTART)
+#define ACTION_ECHO_QEND   add_action (SECT3_ESCAPED_QEND)
 
 #define ACTION_M4_IFDEF(def, should_define) \
     do{ \
@@ -218,8 +218,6 @@ M4QEND      "]]"
 
 
 <COMMENT,CODE_COMMENT>{ /* */
-        {M4QSTART}  ACTION_ECHO_QSTART;
-        {M4QEND}    ACTION_ECHO_QEND;
         [^\[\]\*\n]*  ACTION_ECHO;
         .           ACTION_ECHO;
 
@@ -257,8 +255,8 @@ M4QEND      "]]"
 			}
 	.		/* ignore spurious characters */
 }
-<ACTION,CODEBLOCK,ACTION_STRING,PERCENT_BRACE_ACTION,COMMENT,CHARACTER_CONSTANT>{
-   /* M4|YY|m4 add_action(M4QSTART); ACTION_ECHO; add_action(M4QEND); */
+<ACTION,CODEBLOCK,ACTION_STRING,PERCENT_BRACE_ACTION,CHARACTER_CONSTANT,
+COMMENT,CODE_COMMENT>{
    {M4QSTART}   ACTION_ECHO_QSTART;
    {M4QEND}     ACTION_ECHO_QEND;
 }
@@ -295,12 +293,6 @@ M4QEND      "]]"
 
     {M4QSTART}  buf_strnappend(&top_buf, escaped_qstart, (int) strlen(escaped_qstart));
     {M4QEND}    buf_strnappend(&top_buf, escaped_qend, (int) strlen(escaped_qend));
-    /* m4|M4|YY   {
-       buf_strnappend(&top_buf, M4QSTART, 2);
-       buf_strnappend(&top_buf, yytext, 2);
-       buf_strnappend(&top_buf, M4QEND, 2);
-    } */
-
     ([^{}\r\nmMY\[\]]+)|[^{}\r\n]  {
        buf_strnappend(&top_buf, yytext, yyleng);
     }
@@ -628,7 +620,6 @@ M4QEND      "]]"
 			sectnum = 3;
 			BEGIN(no_section3_escape ? SECT3_NOESCAPE : SECT3);
 			outn("/* Begin user sect3 */");
-                        //fwrite(M4QSTART, 1, 2, yyout);
 			yyterminate(); /* to stop the parser */
 
 			}
