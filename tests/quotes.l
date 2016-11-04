@@ -62,9 +62,23 @@ static int foo (int i){
 
 
 %%
-  /* indented code    [ 1 ] */
-  /* indented code   [[ 2 ]] */
-  /* indented code  [[[ 3 ]]] */
+
+%{
+#define ASSERTEQ(a, b) assert(!strcmp((a),(b)))
+ASSERTEQ("[[ 2 m4_m4exit(255) ]]", "[""[ 2 m4_m4exit(255) ]""]");
+ASSERTEQ("[[[ 3 ]]]", "[""[""[ 3 ]""]""]");
+ASSERTEQ("[[[[ 4 ]]]]", "[""[""[""[ 4 ]""]""]""]");
+ASSERTEQ("]] unbalanced m4_m4exit(255) [[", "]""] unbalanced m4_m4exit(255) [""[");
+%}
+
+    ASSERTEQ("[[ 2 m4_m4exit(255) ]]", "[""[ 2 m4_m4exit(255) ]""]");
+    ASSERTEQ("[[[ 3 ]]]", "[""[""[ 3 ]""]""]");
+    ASSERTEQ("[[[[ 4 ]]]]", "[""[""[""[ 4 ]""]""]""]");
+    ASSERTEQ("]] unbalanced m4_m4exit(255) [[", "]""] unbalanced m4_m4exit(255)\
+ [""[");
+  /* indented code    [ m4_m4exit() ] */
+  /* indented code   [[ m4_m4exit() ]] */
+  /* indented code  [[[ m4_m4exit() ]]] */
   /* indented code [[[[ 4 ]]]] */
   /* indented code ]] unmatched [[ */
 a       /* action comment    [ 1 ]          */ ;
@@ -73,13 +87,26 @@ c       /* action comment  [[[ 3 ]]]        */ ;
 d       /* action comment [[[[ 4 ]]]]       */ ;
 e       /* action comment ]] unmatched [[   */ ;
 f       return 1+foo(a[b[c[0]]]);
-.|\n    { 
+.|\n    {
+
+#if 0
+               action code     [ 1 ]        TEST_XXX
+               action code    [[ 2 ]]       TEST_XXX
+               action code   [[[ 3 ]]]      TEST_XXX
+               action code  [[[[ 4 ]]]]     TEST_XXX
+               action code  ]] unmatched [[ TEST_XXX
+#endif
             /* action block    [ 1 ]        TEST_XXX */
             /* action block   [[ 2 ]]       TEST_XXX */
             /* action block  [[[ 3 ]]]      TEST_XXX */
             /* action block [[[[ 4 ]]]]     TEST_XXX */
             /* action block ]] unmatched [[ TEST_XXX */
-            assert(!strcmp("m4_define(alpha, beta)", "m4_""define(alpha, beta)"));
+            assert(!strcmp("[[ 2 ]]", "[""[ 2 ]""]"));
+            assert(!strcmp("[[[ 3 ]]]", "[""[""[ 3 ]""]""]"));
+            assert(!strcmp("[[[[ 4 ]]]]", "[""[""[""[ 4 ]""]""]""]"));
+            assert(!strcmp("]] unmatched [[", "]""] unmatched [""["));
+            assert(!strcmp("]]m4_define(alpha, beta)[[",
+             "]""]m4_""define(alpha, beta)[""["));
             return 1+foo(a[b[c[0]]]);  /*   TEST_XXX */
          }
 %%

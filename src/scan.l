@@ -487,15 +487,15 @@ COMMENT,CODE_COMMENT>{
 	^{WS} START_CODEBLOCK(true); /* indented code in prolog */
 
 	^{NOT_WS}.*	{	/* non-indented code */
+                           yyless( 0 );	/* put it all back */
 			if ( bracelevel <= 0 )
 				{ /* not in %{ ... %} */
-				yyless( 0 );	/* put it all back */
 				yy_set_bol( 1 );
 				mark_prolog();
 				BEGIN(SECT2);
 				}
 			else
-				ACTION_ECHO;
+                           START_CODEBLOCK(true);
 			}
 
 	.		ACTION_ECHO;
