@@ -38,7 +38,6 @@
 #define CMD_DEFINE_YYTABLES  "%define-yytables"
 #define CMD_IF_CPP_ONLY      "%if-c++-only"
 #define CMD_IF_C_ONLY        "%if-c-only"
-#define CMD_IF_C_OR_CPP      "%if-c-or-c++"
 #define CMD_NOT_FOR_HEADER   "%not-for-header"
 #define CMD_OK_FOR_HEADER    "%ok-for-header"
 #define CMD_PUSH             "%push"
@@ -783,17 +782,12 @@ void skelout (void)
 			else if (cmd_match (CMD_IF_CPP_ONLY)) {
 				/* only for C++ */
                 sko_push(do_copy);
-				do_copy = C_plus_plus;
+				do_copy = do_copy && C_plus_plus;
 			}
 			else if (cmd_match (CMD_IF_C_ONLY)) {
 				/* %- only for C */
                 sko_push(do_copy);
-				do_copy = !C_plus_plus;
-			}
-			else if (cmd_match (CMD_IF_C_OR_CPP)) {
-				/* %* for C and C++ */
-                sko_push(do_copy);
-				do_copy = true;
+				do_copy = do_copy && !C_plus_plus;
 			}
 			else if (cmd_match (CMD_NOT_FOR_HEADER)) {
 				/* %c begin linkage-only (non-header) code. */
