@@ -254,9 +254,7 @@ m4preproc_include(«flexint.h»)
 %not-for-header
 /* Returned upon end-of-file. */
 #define YY_NULL 0
-%ok-for-header
 
-%not-for-header
 /* Promotes a possibly negative, possibly signed char to an
  *   integer in range [0..255] for use as an array index.
  */
@@ -346,8 +344,7 @@ m4_define( [[YYFARGS1]], [[($1 $2 M4_YY_DEF_LAST_ARG)]])
 m4_define( [[YYFARGS2]], [[($1 $2, $3 $4 M4_YY_DEF_LAST_ARG)]])
 m4_define( [[YYFARGS3]], [[($1 $2, $3 $4, $5 $6 M4_YY_DEF_LAST_ARG)]])
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
 /* Enter a start condition.  This macro really ought to take a parameter,
  * but we do it the disgusting crufty way forced on us by the ()-less
  * definition of BEGIN.
@@ -364,7 +361,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 /* Special action meaning "start processing a new file". */
 #define YY_NEW_FILE yyrestart( yyin M4_YY_CALL_LAST_ARG )
 #define YY_END_OF_BUFFER_CHAR 0
-]])
+%ok-for-header
 
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
@@ -379,12 +376,11 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 #endif /* __ia64__ */
 #endif
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
 /* The state buf must be large enough to hold one state per character in the main buffer.
  */
 #define YY_STATE_BUF_SIZE   ((YY_BUF_SIZE + 2) * sizeof(yy_state_type))
-]])
+%ok-for-header
 
 
 #ifndef YY_TYPEDEF_YY_BUFFER_STATE
