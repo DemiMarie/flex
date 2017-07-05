@@ -4,15 +4,15 @@
 %#
 %#   1. flex.skl is processed through GNU m4 during the
 %#      pre-compilation stage of flex. Only macros starting
-%#      with `m4preproc_' are processed, and quoting is normal.
+%#      with «m4preproc_» are processed, and quoting is with « and ».
 %#
 %#   2. The preprocessed skeleton is translated into a C array, saved
 %#      as "skel.c" and compiled into the flex binary. The %# comment
 %#      lines are removed.
 %#
 %#   3. At runtime, the skeleton is generated and filtered (again)
-%#      through m4. Macros beginning with `m4_' will be processed.
-%#      The quoting is "[[" and "]]" so we don't interfere with
+%#      through m4. Macros beginning with «m4_» will be processed.
+%#      The quoting is "[[" and "]]" so we don»t interfere with
 %#      user code.
 %#
 %# All generated macros for the m4 stage contain the text "m4" or "M4"
@@ -24,6 +24,7 @@
 
 %#  Macros for preproc stage.
 m4preproc_changecom
+m4preproc_changequote(«,»)
 
 %# Macros for runtime processing stage.
 m4_changecom
@@ -112,16 +113,16 @@ m4_ifdef( [[M4_YY_REENTRANT]],  [[m4_define([[M4_YY_HAS_START_STACK_VARS]])]])
 
 m4_ifdef( [[M4_YY_PREFIX]],, [[m4_define([[M4_YY_PREFIX]], [[yy]])]])
 
-m4preproc_define(`M4_GEN_PREFIX',``
+m4preproc_define(«M4_GEN_PREFIX»,««
 [[#ifdef yy$1
 #define ]]M4_YY_PREFIX[[$1_ALREADY_DEFINED
 #else
 #define yy$1 ]]M4_YY_PREFIX[[$1
 #endif]]
-'m4preproc_divert(1)`
+»m4preproc_divert(1)«
 [[#ifndef ]]M4_YY_PREFIX[[$1_ALREADY_DEFINED
 #undef yy$1
-#endif]]'m4preproc_divert(0)')
+#endif]]»m4preproc_divert(0)»)
 
 %if-c++-only
     /* The c++ scanner is a mess. The FlexLexer.h header file relies on the
@@ -135,83 +136,80 @@ m4preproc_define(`M4_GEN_PREFIX',``
 
 %if-c-only
 m4_ifelse(M4_YY_PREFIX,yy,,
-    M4_GEN_PREFIX(`_create_buffer')
-    M4_GEN_PREFIX(`_delete_buffer')
-    M4_GEN_PREFIX(`_scan_buffer')
-    M4_GEN_PREFIX(`_scan_string')
-    M4_GEN_PREFIX(`_scan_bytes')
-    M4_GEN_PREFIX(`_init_buffer')
-    M4_GEN_PREFIX(`_flush_buffer')
-    M4_GEN_PREFIX(`_load_buffer_state')
-    M4_GEN_PREFIX(`_switch_to_buffer')
-    M4_GEN_PREFIX(`push_buffer_state')
-    M4_GEN_PREFIX(`pop_buffer_state')
-    M4_GEN_PREFIX(`ensure_buffer_stack')
-    M4_GEN_PREFIX(`lex')
-    M4_GEN_PREFIX(`restart')
-    M4_GEN_PREFIX(`lex_init')
-    M4_GEN_PREFIX(`lex_init_extra')
-    M4_GEN_PREFIX(`lex_destroy')
-    M4_GEN_PREFIX(`get_debug')
-    M4_GEN_PREFIX(`set_debug')
-    M4_GEN_PREFIX(`get_extra')
-    M4_GEN_PREFIX(`set_extra')
-    M4_GEN_PREFIX(`get_in')
-    M4_GEN_PREFIX(`set_in')
-    M4_GEN_PREFIX(`get_out')
-    M4_GEN_PREFIX(`set_out')
-    M4_GEN_PREFIX(`get_leng')
-    M4_GEN_PREFIX(`get_text')
-    M4_GEN_PREFIX(`get_lineno')
-    M4_GEN_PREFIX(`set_lineno')
-    m4_ifdef( [[M4_YY_REENTRANT]],
-    [[
-        M4_GEN_PREFIX(`get_column')
-        M4_GEN_PREFIX(`set_column')
-    ]])
-    M4_GEN_PREFIX(`wrap')
+    M4_GEN_PREFIX(«_create_buffer»)
+    M4_GEN_PREFIX(«_delete_buffer»)
+    M4_GEN_PREFIX(«_scan_buffer»)
+    M4_GEN_PREFIX(«_scan_string»)
+    M4_GEN_PREFIX(«_scan_bytes»)
+    M4_GEN_PREFIX(«_init_buffer»)
+    M4_GEN_PREFIX(«_flush_buffer»)
+    M4_GEN_PREFIX(«_load_buffer_state»)
+    M4_GEN_PREFIX(«_switch_to_buffer»)
+    M4_GEN_PREFIX(«push_buffer_state»)
+    M4_GEN_PREFIX(«pop_buffer_state»)
+    M4_GEN_PREFIX(«ensure_buffer_stack»)
+    M4_GEN_PREFIX(«lex»)
+    M4_GEN_PREFIX(«restart»)
+    M4_GEN_PREFIX(«lex_init»)
+    M4_GEN_PREFIX(«lex_init_extra»)
+    M4_GEN_PREFIX(«lex_destroy»)
+    M4_GEN_PREFIX(«get_debug»)
+    M4_GEN_PREFIX(«set_debug»)
+    M4_GEN_PREFIX(«get_extra»)
+    M4_GEN_PREFIX(«set_extra»)
+    M4_GEN_PREFIX(«get_in»)
+    M4_GEN_PREFIX(«set_in»)
+    M4_GEN_PREFIX(«get_out»)
+    M4_GEN_PREFIX(«set_out»)
+    M4_GEN_PREFIX(«get_leng»)
+    M4_GEN_PREFIX(«get_text»)
+    M4_GEN_PREFIX(«get_lineno»)
+    M4_GEN_PREFIX(«set_lineno»)
+%if-reentrant
+    M4_GEN_PREFIX(«get_column»)
+    M4_GEN_PREFIX(«set_column»)
+%endif
+    M4_GEN_PREFIX(«wrap»)
 )
 %endif
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
-    M4_GEN_PREFIX(`get_lval')
-    M4_GEN_PREFIX(`set_lval')
-]])
+%if-bison-bridge
+    M4_GEN_PREFIX(«get_lval»)
+    M4_GEN_PREFIX(«set_lval»)
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
-    M4_GEN_PREFIX(`get_lloc')
-    M4_GEN_PREFIX(`set_lloc')
+    M4_GEN_PREFIX(«get_lloc»)
+    M4_GEN_PREFIX(«set_lloc»)
 ]])
 
 
 m4_ifelse(M4_YY_PREFIX,yy,,
-    M4_GEN_PREFIX(`alloc')
-    M4_GEN_PREFIX(`realloc')
-    M4_GEN_PREFIX(`free')
+    M4_GEN_PREFIX(«alloc»)
+    M4_GEN_PREFIX(«realloc»)
+    M4_GEN_PREFIX(«free»)
 )
 
 %if-c-only
 m4_ifelse(M4_YY_PREFIX,yy,,
-m4_ifdef( [[M4_YY_NOT_REENTRANT]],
-[[
-    M4_GEN_PREFIX(`text')
-    M4_GEN_PREFIX(`leng')
-    M4_GEN_PREFIX(`in')
-    M4_GEN_PREFIX(`out')
-    M4_GEN_PREFIX(`_flex_debug')
-    M4_GEN_PREFIX(`lineno')
-]])
+%if-reentrant
+    M4_GEN_PREFIX(«text»)
+    M4_GEN_PREFIX(«leng»)
+    M4_GEN_PREFIX(«in»)
+    M4_GEN_PREFIX(«out»)
+    M4_GEN_PREFIX(«_flex_debug»)
+    M4_GEN_PREFIX(«lineno»)
+%endif
 )
 %endif
 
 
 m4_ifdef( [[M4_YY_TABLES_EXTERNAL]],
 [[
-    M4_GEN_PREFIX(`tables_fload')
-    M4_GEN_PREFIX(`tables_destroy')
-    M4_GEN_PREFIX(`TABLES_NAME')
+    M4_GEN_PREFIX(«tables_fload»)
+    M4_GEN_PREFIX(«tables_destroy»)
+    M4_GEN_PREFIX(«TABLES_NAME»)
 ]])
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -231,7 +229,7 @@ m4_ifdef( [[M4_YY_TABLES_EXTERNAL]],
 /* end standard C headers. */
 
 %if-c-or-c++
-m4preproc_include(`flexint.h')
+m4preproc_include(«flexint.h»)
 %endif
 
 /* begin standard C++ headers. */
@@ -1061,10 +1059,10 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 #define YY_FATAL_ERROR(msg) LexerError( msg )
 %endif
 #endif
-]])
+%ok-for-header
 
 %if-tables-serialization structures and prototypes
-m4preproc_include(`tables_shared.h')
+m4preproc_include(«tables_shared.h»)
 
 /* Load the DFA tables from the given stream.  */
 int yytables_fload (FILE * fp M4_YY_PROTO_LAST_ARG);
@@ -2990,7 +2988,7 @@ void yyfree YYFARGS1( void *,ptr)
 ]])
 
 %if-tables-serialization definitions
-m4preproc_include(`tables_shared.c')
+m4preproc_include(«tables_shared.c»)
 
 static int yytbl_read8 (void *v, struct yytbl_reader * rd)
 {
