@@ -228,9 +228,7 @@ m4_ifdef( [[M4_YY_TABLES_EXTERNAL]],
 %endif
 /* end standard C headers. */
 
-%if-c-or-c++
 m4preproc_include(«flexint.h»)
-%endif
 
 /* begin standard C++ headers. */
 %if-c++-only
@@ -2143,7 +2141,6 @@ m4_ifdef( [[M4_YY_ALWAYS_INTERACTIVE]],
 		yy_load_buffer_state( M4_YY_CALL_ONLY_ARG );
 }
 
-%if-c-or-c++
 /** Pushes the new state onto the stack. The new state becomes
  *  the current state. This function will allocate the stack
  *  if necessary.
@@ -2181,10 +2178,8 @@ void yyFlexLexer::yypush_buffer_state (YY_BUFFER_STATE new_buffer)
 	yy_load_buffer_state( M4_YY_CALL_ONLY_ARG );
 	YY_G(yy_did_buffer_switch_on_eof) = 1;
 }
-%endif
 
 
-%if-c-or-c++
 /** Removes and deletes the top of the stack, if present.
  *  The next element becomes the new top.
  *  M4_YY_DOC_PARAM
@@ -2210,10 +2205,8 @@ void yyFlexLexer::yypop_buffer_state (void)
 		YY_G(yy_did_buffer_switch_on_eof) = 1;
 	}
 }
-%endif
 
 
-%if-c-or-c++
 /* Allocates the stack if it does not exist.
  *  Guarantees space for at least one push.
  */
@@ -2266,7 +2259,6 @@ void yyFlexLexer::yyensure_buffer_stack(void)
 		YY_G(yy_buffer_stack_max) = num_to_alloc;
 	}
 }
-%endif
 
 
 
