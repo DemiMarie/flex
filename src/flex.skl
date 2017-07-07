@@ -100,11 +100,12 @@ m4_ifelse(M4_YY_PREFIX,yy,,
 
 %# Some negated symbols
 m4_ifdef( [[M4_YY_IN_HEADER]], , [[m4_define([[M4_YY_NOT_IN_HEADER]], [[]])]])
-m4_ifdef( [[M4_YY_REENTRANT]], , [[m4_define([[M4_YY_NOT_REENTRANT]], [[]])]])
 
 %# This is the m4 way to say "(stack_used || is_reentrant)
 m4_ifdef( [[M4_YY_STACK_USED]], [[m4_define([[M4_YY_HAS_START_STACK_VARS]])]])
-m4_ifdef( [[M4_YY_REENTRANT]],  [[m4_define([[M4_YY_HAS_START_STACK_VARS]])]])
+%if-reentrant
+m4_define([[M4_YY_HAS_START_STACK_VARS]])
+%endif
 
 %# Prefixes.
 %# The complexity here is necessary so that m4 preserves
@@ -401,8 +402,7 @@ extern FILE *yyin, *yyout;
 %endif
 %endif
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
 #define EOB_ACT_CONTINUE_SCAN 0
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
@@ -448,7 +448,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 		} \
 	while ( 0 )
 #define unput(c) yyunput( c, YY_G(yytext_ptr) M4_YY_CALL_LAST_ARG )
-]])
+%ok-for-header
 
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
@@ -749,10 +749,9 @@ m4_ifdef( [[M4_YY_TEXT_IS_ARRAY]],
     int yy_more_len;
 ]])
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
+%if-bison-bridge
     YYSTYPE * yylval_r;
-]])
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
@@ -764,28 +763,25 @@ m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 
 
 %if-c-only
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
 static int yy_init_globals ( M4_YY_PROTO_ONLY_ARG );
-]])
+%ok-for-header
 %endif
 
 %if-reentrant
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
-    m4_ifdef( [[M4_YY_BISON_LVAL]],
-    [[
+%not-for-header
+%if-bison-bridge
     /* This must go here because YYSTYPE and YYLTYPE are included
      * from bison output in section 1.*/
     #    define yylval YY_G(yylval_r)
-    ]])
+%endif
 
     m4_ifdef( [[<M4_YY_BISON_LLOC>]],
     [[
     #    define yylloc YY_G(yylloc_r)
     ]])
-]])
+%ok-for-header
 
 int yylex_init (yyscan_t* scanner);
 
@@ -863,21 +859,17 @@ m4_ifdef( [[M4_YY_NO_SET_LINENO]],,
 void yyset_lineno ( int _line_number M4_YY_PROTO_LAST_ARG );
 ]])
 
-m4_ifdef( [[M4_YY_REENTRANT]],
-[[
+%if-reentrant
 m4_ifdef( [[M4_YY_NO_GET_COLUMN]],,
 [[
 int yyget_column  ( M4_YY_PROTO_ONLY_ARG );
 ]])
-]])
 
-m4_ifdef( [[M4_YY_REENTRANT]],
-[[
 m4_ifdef( [[M4_YY_NO_SET_COLUMN]],,
 [[
 void yyset_column ( int _column_no M4_YY_PROTO_LAST_ARG );
 ]])
-]])
+%endif
 
 %if-bison-bridge
 m4_ifdef( [[M4_YY_NO_GET_LVAL]],,
@@ -949,18 +941,16 @@ static int input ( M4_YY_PROTO_ONLY_ARG );
 m4_ifdef( [[M4_YY_STACK_USED]],
 [[
 
-m4_ifdef( [[M4_YY_NOT_REENTRANT]],
-[[
+%if-not-reentrant
     m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
     [[
         static int yy_start_stack_ptr = 0;
         static int yy_start_stack_depth = 0;
         static int *yy_start_stack = NULL;
     ]])
-]])
+%endif
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
     m4_ifdef( [[M4_YY_NO_PUSH_STATE]],,
     [[
     static void yy_push_state ( int _new_state M4_YY_PROTO_LAST_ARG);
@@ -973,7 +963,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
     [[
     static int yy_top_state ( M4_YY_PROTO_ONLY_ARG );
     ]])
-]])
+%ok-for-header
 
 ]],
 [[
@@ -993,8 +983,7 @@ m4_define( [[M4_YY_NO_TOP_STATE]])
 #endif /* __ia64__ */
 #endif
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
+%not-for-header
 /* Copy whatever the last rule matched to the standard output. */
 #ifndef ECHO
 %if-c-only Standard (non-C++) definition
@@ -1007,10 +996,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 #define ECHO LexerOutput( yytext, yyleng )
 %endif
 #endif
-]])
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
  * is returned in "result".
  */
@@ -1024,10 +1010,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 %endif
 
 #endif
-]])
 
-m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
-[[
 /* No semi-colon after return; correct usage is to write "yyterminate();" -
  * we don't want an extra ';' after the "return" because that will cause
  * some compilers to complain about unreachable statements.
@@ -1035,7 +1018,7 @@ m4_ifdef( [[M4_YY_NOT_IN_HEADER]],
 #ifndef yyterminate
 #define yyterminate() return YY_NULL
 #endif
-]])
+%ok-for-header
 
 /* Number of entries by which start-condition stack grows. */
 #ifndef YY_START_STACK_INCR
@@ -1104,8 +1087,7 @@ struct yytbl_reader {
 m4_define( [[M4_YY_LEX_PROTO]], [[(M4_YY_PROTO_ONLY_ARG)]])
 m4_define( [[M4_YY_LEX_DECLARATION]], [[(M4_YY_DEF_ONLY_ARG)]])
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
+%if-bison-bridge
     m4_dnl  The bison pure parser is used. Redefine yylex to
     m4_dnl  accept the lval parameter.
 
@@ -1113,7 +1095,7 @@ m4_ifdef( [[M4_YY_BISON_LVAL]],
                [[(YYSTYPE * yylval_param M4_YY_PROTO_LAST_ARG)]])
     m4_define( [[M4_YY_LEX_DECLARATION]], [[\]]
                [[YYFARGS1(YYSTYPE *,yylval_param)]])
-]])
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
@@ -1167,22 +1149,19 @@ YY_DECL
 	int yy_act;
     M4_YY_DECL_GUTS_VAR();
 
-m4_ifdef( [[M4_YY_NOT_REENTRANT]],
-[[
-    m4_ifdef( [[M4_YY_BISON_LVAL]],
-    [[
-        YYSTYPE * yylval;
-    ]])
+%if-not-reentrant
+%if-bison-bridge
+    YYSTYPE * yylval;
+%endif
     m4_ifdef( [[<M4_YY_BISON_LLOC>]],
     [[
         YYLTYPE * yylloc;
     ]])
-]])
+%endif
 
-m4_ifdef( [[M4_YY_BISON_LVAL]],
-[[
+%if-bison-bridge
     yylval = yylval_param;
-]])
+%endif
 
 m4_ifdef( [[<M4_YY_BISON_LLOC>]],
 [[
@@ -2504,17 +2483,15 @@ int yyget_lineno  (M4_YY_DEF_ONLY_ARG)
 {
     M4_YY_DECL_GUTS_VAR();
 
-    m4_ifdef( [[M4_YY_REENTRANT]],
-    [[
+%if-reentrant
         if (! YY_CURRENT_BUFFER)
             return 0;
-    ]])
+%endif
     return yylineno;
 }
 ]])
 
-m4_ifdef( [[M4_YY_REENTRANT]],
-[[
+%if-reentrant
 m4_ifdef( [[M4_YY_NO_GET_COLUMN]],,
 [[
 /** Get the current column number.
@@ -2524,15 +2501,12 @@ int yyget_column  (M4_YY_DEF_ONLY_ARG)
 {
     M4_YY_DECL_GUTS_VAR();
 
-    m4_ifdef( [[M4_YY_REENTRANT]],
-    [[
         if (! YY_CURRENT_BUFFER)
             return 0;
-    ]])
     return yycolumn;
 }
 ]])
-]])
+%endif
 
 m4_ifdef( [[M4_YY_NO_GET_IN]],,
 [[
@@ -2607,18 +2581,16 @@ void yyset_lineno YYFARGS1( int ,_line_number)
 {
     M4_YY_DECL_GUTS_VAR();
 
-    m4_ifdef( [[M4_YY_REENTRANT]],
-    [[
+%if-reentrant
         /* lineno is only valid if an input buffer exists. */
         if (! YY_CURRENT_BUFFER )
            YY_FATAL_ERROR( "yyset_lineno called with no buffer" );
-    ]])
+%endif
     yylineno = _line_number;
 }
 ]])
 
-m4_ifdef( [[M4_YY_REENTRANT]],
-[[
+%if-reentrant
 m4_ifdef( [[M4_YY_NO_SET_COLUMN]],,
 [[
 /** Set the current column.
@@ -2629,16 +2601,13 @@ void yyset_column YYFARGS1( int , _column_no)
 {
     M4_YY_DECL_GUTS_VAR();
 
-    m4_ifdef( [[M4_YY_REENTRANT]],
-    [[
         /* column is only valid if an input buffer exists. */
         if (! YY_CURRENT_BUFFER )
            YY_FATAL_ERROR( "yyset_column called with no buffer" );
-    ]])
     yycolumn = _column_no;
 }
 ]])
-]])
+%endif
 
 
 m4_ifdef( [[M4_YY_NO_SET_IN]],,
@@ -2805,11 +2774,10 @@ static int yy_init_globals (M4_YY_DEF_ONLY_ARG)
 
 m4_ifdef( [[M4_YY_USE_LINENO]],
 [[
-    m4_ifdef( [[M4_YY_NOT_REENTRANT]],
-    [[
+%if-not-reentrant
     /* We do not touch yylineno unless the option is enabled. */
     yylineno =  1;
-    ]])
+%endif
 ]])
     YY_G(yy_buffer_stack) = NULL;
     YY_G(yy_buffer_stack_top) = 0;
