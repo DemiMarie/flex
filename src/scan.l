@@ -40,6 +40,29 @@
 /*  PURPOSE. */
 
 #include "parse.h"
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
+/* for assert(), static_assert() */
+#include <assert.h>
+
+#ifndef __cplusplus
+# include <stdbool.h>
+# ifdef bool
+#  undef bool
+# endif
+typedef _Bool bool;
+# ifdef false
+#  undef false
+# endif
+# ifdef true
+#  undef true
+# endif
+# define false ((_Bool)0)
+# define true ((_Bool)1)
+#endif
+
 extern bool tablesverify, tablesext;
 extern int trlcontxt; /* Set in  parse.y for each rule. */
 extern const char *escaped_qstart, *escaped_qend;
@@ -51,6 +74,27 @@ static bool write_to_buf;
 
 #define ESCAPED_QSTART "[" M4QEND M4QSTART "[" M4QEND M4QSTART
 #define ESCAPED_QEND M4QEND "]" M4QSTART M4QEND "]" M4QSTART
+
+#if (defined __cplusplus && __cplusplus >= 201103L) || \
+    (defined __STDC_VERSION__ && __STDC_VERSION__ >= 201112L)
+# define FLEX_STATIC_ASSERT(x, y) (static_assert(x, y))
+#else
+# define FLEX_STATIC_ASSERT(x, y) \
+  (0 * sizeof(struct { unsigned q: -1 + 2*!!(x); }))
+#endif
+
+static void flex_yy_input(FILE *flex_input, char *buffer, int *read,
+                          int max_read);
+
+
+#define YY_INPUT(buffer, read, max_read) \
+  do {                                                                        \
+    FLEX_STATIC_ASSERT(sizeof(read) == sizeof(int), "bug");                   \
+    FLEX_STATIC_ASSERT(sizeof(max_read) == sizeof(int), "bug");               \
+    FLEX_STATIC_ASSERT(sizeof(yyin) == sizeof(void*), "bug");                 \
+    FLEX_STATIC_ASSERT(sizeof(buffer) == sizeof(void*), "bug");               \
+    flex_yy_input((yyin), (buffer), &(read), (max_read));                     \
+  } while (0)
 
 #define ACTION_ECHO                                                            \
   do {                                                                         \
@@ -206,8 +250,8 @@ CCL_EXPR	("[:"^?[[:alpha:]]+":]")
 
 LEXOPT		([aceknopr])
 
-M4QSTART    ("[""[")
-M4QEND      ("]""]")
+M4QSTART    ("[[")
+M4QEND      ("]]")
 
 %%
 	static int bracelevel, didadef, indented_code;
@@ -1195,3 +1239,20 @@ void set_input_file( char *file )
 
 	linenum = 1;
 	}
+
+static void flex_yy_input(FILE *flex_input, char *buffer, int *read,
+                          int max_read) {
+  static char *buf = 0;
+  static size_t buflen = 0;
+  ssize_t res = getline(&buf, &buflen, flex_input);
+  if (res < 0) {
+    lerr(_("I/O error"));
+    FLEX_EXIT(EXIT_FAILURE);
+  }
+  if (strnlen(buf, res) != (size_t)res) {
+    lerr(_("Fatal error: NUL character in input file"));
+    /* M4 has undefined behavior if it gets a NUL character */
+    /* Also, add_action() assumes NUL termination.          */
+    FLEX_EXIT(EXIT_FAILURE);
+  }
+}
