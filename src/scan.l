@@ -64,9 +64,11 @@ typedef _Bool bool;
 #endif
 
 struct FlexReader {
-  FILE *input;
-  char *buffer;
-  size_t buflen;
+  FILE *input; /**< Input stream */
+  char *buffer; /**< Buffer */
+  size_t buflen; /**< Length of buffer */
+  size_t initialized; /**< Initialized length of buffer */
+  size_t offset; /**< Offset */
 }
 
 static void
@@ -1275,30 +1277,65 @@ static bool flex_is_space(char q) {
   }
 }
 
-
 static bool find_escaped_newline(const char *buf, size_t size) {
   const char *end_ptr;
   size_t end_of_line = size;
   if (!size)
     return 0; /* avoid undefined pointer arithmetic */
   assert(SIZE_MAX - (size_t)buf >= size);
-  end_ptr = buf + size;
-  while (end_ptr > buf && flex_is_space(*--end_ptr)) {}
-  assert(end_ptr - buf < size && "Pointer was not decremented by loop");
+  for (end_ptr = buf + size; end_ptr > buf && flex_is_space(*end_ptr);
+       --end_ptr) {
+  }
   assert(end_ptr >= buf && "End pointer decremented past buffer");
-  if ('\\' == *end_ptr)
-    return end_ptr - buf;
-  if (end_ptr - buf < 2)
-    return size;
-  if (!memcmp(end_ptr - 2, "?\?/"))
-    return end_ptr - 2 - buf;
+  if (end_ptr > buf && '\\' == end_ptr[-1]) {
+    /* Normal escaped newline */
+    return end_ptr - 1 - buf;
+  }
+  if (end_ptr - buf >= 3 && !memcmp(end_ptr - 3, "?\?/", 3)) {
+    /* Ends with a trigraph */
+    return end_ptr - 3 - buf;
+  }
   return size;
 }
 
-static void flex_read_line(struct FlexReader *reader, char *buffer, int *read,
-                           int max_read, bool is_copying) {
+static void flex_refill_buffer(struct FlexReader *reader, char *buffer,
+                               int *read, int max_read, bool is_copying) {
+restart:
+  assert(max_read > 0);
+  assert(reader->initialized >= reader->mark);
+  assert(reader->initialized >= reader->offset);
+  if (reader->mark > reader->offset) {
+    size_t remaining, bytes_to_copy;
+  copy:
+    remaining = reader->mark - reader->offset;
+    bytes_to_copy = remaining > (size_t)max_read ? (size_t)max_read : remaining;
+    *read = (int)bytes_to_copy;
+    memcpy(buffer, reader->buf + reader->offset, remaining);
+    reader->offset += bytes_to_copy;
+  } else if (reader->mark < reader->initialized) {
+    reader->mark = reader->initialized;
+    if (is_copying) {
+      output_data(reader->buf + reader->mark,
+                  reader->initialized - reader->mark);
+      goto refill;
+    } else {
+      goto copy;
+    }
+  } else {
+  refill:
+    flex_read_line(reader);
+    if (reader->initialized)
+      goto restart;
+    assert(feof(reader->input));
+    *read = 0;
+  }
+}
+
+static void flex_read_line(struct FlexReader *reader) {
+  ssize_t res;
   assert(max_read >= 0);
-  ssize_t res = getline(&buf, &buflen, flex_input);
+  res = getline(&reader->buf, &reader->buflen, reader->input);
+  buf->initialized = (size_t)res;
   if (res < 0) {
     lerr(_("I/O error"));
     FLEX_EXIT(EXIT_FAILURE);
@@ -1316,15 +1353,14 @@ static void flex_read_line(struct FlexReader *reader, char *buffer, int *read,
     FLEX_EXIT(EXIT_FAILURE);
   }
 
-  size_t end = find_escaped_newline(buf, (size_t)res);
-  if (end != (size_t)res) {
-    
+  buf->mark = (size_t)(find_escaped_newline(buf, (size_t)res) - buf);
+}
 
-    static void flex_close_reader(struct FlexReader * reader) {
-      FILE *input = reader->input;
-      if (input != stdin && input != stdout && input != stderr) {
-        fclose(input);
-      }
-      free(reader->buffer);
-      memset(reader, 0, sizeof *reader);
-    }
+static void flex_close_reader(struct FlexReader *reader) {
+  FILE *input = reader->input;
+  if (input != stdin && input != stdout && input != stderr) {
+    fclose(input);
+  }
+  free(reader->buffer);
+  memset(reader, 0, sizeof *reader);
+}
