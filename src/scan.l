@@ -63,6 +63,20 @@ typedef _Bool bool;
 # define true ((_Bool)1)
 #endif
 
+struct FlexReader {
+  FILE *input;
+  char *buffer;
+  size_t buflen;
+}
+
+static void
+flex_init_reader(struct FlexReader *reader, FILE *stream);
+
+static void flex_close_reader(struct FlexReader *reader);
+
+static void flex_read_line(struct FlexReader *reader, char *buffer,
+                           size_t maximum_length, size_t *bytes_written);
+
 extern bool tablesverify, tablesext;
 extern int trlcontxt; /* Set in  parse.y for each rule. */
 extern const char *escaped_qstart, *escaped_qend;
@@ -1240,19 +1254,77 @@ void set_input_file( char *file )
 	linenum = 1;
 	}
 
-static void flex_yy_input(FILE *flex_input, char *buffer, int *read,
-                          int max_read) {
-  static char *buf = 0;
-  static size_t buflen = 0;
+static void flex_init_reader(struct FlexReader *reader, FILE *stream) {
+  assert(input != stdout);
+  assert(input != stderr);
+  memset(reader, 0, sizeof *reader);
+  reader->input = stream;
+}
+
+static bool flex_is_space(char q) {
+  switch (q) {
+  case ' ':
+  case '\t':
+  case '\v':
+  case '\f':
+  case '\r':
+  case '\n':
+    return true;
+  default:
+    return false;
+  }
+}
+
+
+static bool find_escaped_newline(const char *buf, size_t size) {
+  const char *end_ptr;
+  size_t end_of_line = size;
+  if (!size)
+    return 0; /* avoid undefined pointer arithmetic */
+  assert(SIZE_MAX - (size_t)buf >= size);
+  end_ptr = buf + size;
+  while (end_ptr > buf && flex_is_space(*--end_ptr)) {}
+  assert(end_ptr - buf < size && "Pointer was not decremented by loop");
+  assert(end_ptr >= buf && "End pointer decremented past buffer");
+  if ('\\' == *end_ptr)
+    return end_ptr - buf;
+  if (end_ptr - buf < 2)
+    return size;
+  if (!memcmp(end_ptr - 2, "?\?/"))
+    return end_ptr - 2 - buf;
+  return size;
+}
+
+static void flex_read_line(struct FlexReader *reader, char *buffer, int *read,
+                           int max_read, bool is_copying) {
+  assert(max_read >= 0);
   ssize_t res = getline(&buf, &buflen, flex_input);
   if (res < 0) {
     lerr(_("I/O error"));
     FLEX_EXIT(EXIT_FAILURE);
   }
+
+  if (res > (ssize_t)INT_MAX) {
+    lerr(_("Line too long (greater than INT_MAX)"));
+    FLEX_EXIT(EXIT_FAILURE);
+  }
+
   if (strnlen(buf, res) != (size_t)res) {
     lerr(_("Fatal error: NUL character in input file"));
     /* M4 has undefined behavior if it gets a NUL character */
     /* Also, add_action() assumes NUL termination.          */
     FLEX_EXIT(EXIT_FAILURE);
   }
-}
+
+  size_t end = find_escaped_newline(buf, (size_t)res);
+  if (end != (size_t)res) {
+    
+
+    static void flex_close_reader(struct FlexReader * reader) {
+      FILE *input = reader->input;
+      if (input != stdin && input != stdout && input != stderr) {
+        fclose(input);
+      }
+      free(reader->buffer);
+      memset(reader, 0, sizeof *reader);
+    }
