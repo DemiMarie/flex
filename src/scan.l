@@ -103,15 +103,6 @@ static void flex_yy_input(FILE *flex_input, char *buffer, int *read,
                           int max_read);
 
 
-#define YY_INPUT(buffer, read, max_read) \
-  do {                                                                        \
-    FLEX_STATIC_ASSERT(sizeof(read) == sizeof(int), "bug");                   \
-    FLEX_STATIC_ASSERT(sizeof(max_read) == sizeof(int), "bug");               \
-    FLEX_STATIC_ASSERT(sizeof(yyin) == sizeof(void*), "bug");                 \
-    FLEX_STATIC_ASSERT(sizeof(buffer) == sizeof(void*), "bug");               \
-    flex_yy_input((yyin), (buffer), &(read), (max_read));                     \
-  } while (0)
-
 #define ACTION_ECHO                                                            \
   do {                                                                         \
     size_t i = 0, j = (yyleng);                                                \
@@ -265,6 +256,12 @@ CCL_CHAR	([^\\\n\]]|{ESCSEQ})
 CCL_EXPR	("[:"^?[[:alpha:]]+":]")
 
 LEXOPT		([aceknopr])
+
+C11_OSEQ_OPT (0({INVALID_ESCAPED_NEWLINE}*(\'?){INVALID_ESCAPED_NEWLINE}*[01234567])*)
+C99_DSEQ_OPT (({INVALID_ESCAPED_NEWLINE}*(\'?){INVALID_ESCAPED_NEWLINE}*[[:digit:]])*)
+C99_DSEQ     ([[:digit:]]{C99_DSEQ})
+C99_XSEQ_OPT (({INVALID_ESCAPED_NEWLINE}*(\'?){INVALID_ESCAPED_NEWLINE}*[[:xdigit:]])*)
+C99_XSEQ     ([[:xdigit:]]{C99_XSEQ})
 
 M4QSTART    ("[[")
 M4QEND      ("]]")
